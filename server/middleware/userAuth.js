@@ -1,11 +1,10 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/userModel';
 
 //Middleware to check if user is authenticated
 const userAuth = async (req, res, next) => {
 
     //Get token from cookies
-    const token = req.cookies;
+    const token = req.cookies.token;
     
 
     if(!token) {
@@ -22,7 +21,7 @@ const userAuth = async (req, res, next) => {
 
         //If token is valid, set user in request
         if(tokenDecode.id){
-            req.body.userId = tokenDecode.id
+            req.userId = tokenDecode.id
         
         //If token is invalid, return error
         } else {

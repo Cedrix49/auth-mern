@@ -158,7 +158,7 @@ export const logout = async (req, res) => {
     }
 }
 
-//Send verify otp
+//Send verify OTP
 export const sendVerifyOtp = async (req, res) => {
     
     //Try to send verify otp
@@ -277,6 +277,151 @@ export const verifyEmail = async (req, res) => {
         return res.json({
             success: false,
             message: error.message,
+        })
+    }
+}
+
+//Check if user is authenticated
+export const isAuthenticated = async (req, res) => {
+    try {
+        return res.json({
+            success: true,
+            message: 'User is authenticated',
+        })
+    } catch (error) {
+        return res.json({
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//Send password reset otp
+export const sendResetOtp = async (req, res) => {
+    //Get email from request body
+    const {email} = req.body;
+
+    //Check if email is provided
+    if(!email) {
+        return res.json({
+            success: false,
+            message: 'Email is required',
+        })
+    }
+
+    try {
+        //Get user by email
+        const user = await userModel.findOne({email});
+
+        //Check if user exists
+        if(!user) {
+            return res.json({
+                success: false,
+                message: 'User not found',
+            })
+        }
+
+        //Generate 6 digit otp
+        const otp = String(Math.floor(100000 + Math.random() * 900000));
+
+        //Update user with otp
+        user.resetOtp = otp;
+        user.resetOtpExpireAt = Date.now() + 15 * 60 *1000;
+        
+        //Save user
+        await user.save();
+
+        //Send email to user
+        const mailOptions = {
+            from: process.env.SENDER_EMAIL,
+            to: user.email,
+            subject: 'Password Reset OTP',
+            text: `Your OTP for password reset is ${otp}. Please reset your password by entering this otp in the website. 
+            This otp will expire in 15 minutes.`,
+        }
+
+        await transporter.sendMail(mailOptions);
+
+        return res.json({
+            success: true,
+            message: 'Password reset OTP sent to your email',
+        })
+
+    //If error, return error message
+    } catch (error) {
+        return res.json({
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//Reset user password
+export const resetPassword = async (req, res) => {
+    //Get user email, otp, and new password
+    const {email, otp, newPassword} = req.body;
+
+    //Check if email, otp, and new password are provided
+    if(!email || !otp || !newPassword) {
+        return res.json({
+            success: false,
+            message: 'All fields are required',
+        })
+    }
+
+    //Try to reset password
+    try {
+        //Get user by email
+        const user = await userModel.findOne({email});
+
+        //Check if user exists
+        if(!user) {
+            return res.json({
+                success: false,
+                message: 'User not found',
+            })
+        }
+        
+        //Check if otp is correct
+        if(user.resetOtp === "" || user.resetOtp !== otp) {
+            return res.json({
+                succes: false,
+                message: "Invalid OTP"
+            });
+        }
+
+        //Check if otp is expired
+        if(user.resetOtpExpireAt < Date.now()) {
+            return res.json({
+                success: false,
+                message: 'OTP expired',
+            })
+        }
+
+        //Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        //Update user with new password
+        user.password = hashedPassword;
+        //Clear otp
+        user.resetOtp = '';
+        //Clear otp expire time
+        user.resetOtpExpireAt = 0;
+
+        //Save user
+        await user.save();
+
+        return res.json({
+            success: true,
+            message: 'Password reset successfully',
+        })
+
+    
+    //If error, return error message
+    } catch (error) {
+        return res.json({
+            success: false,
+            message: error.message
         })
     }
 }

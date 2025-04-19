@@ -4,6 +4,8 @@ import 'dotenv/config';
 import cookieParser from "cookie-parser";
 import connectDB from "./config/mongodb.js";
 import authRouter from "./routes/authRoutes.js";
+import userRouter from "./routes/userRoutes.js";
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -21,13 +23,16 @@ app.use(cors({
     credentials: true,
 }))
 
-//API Endpoints
+//Test api
 app.get('/', (req, res) => {
     res.send('Hello World True');
 })
 
 //Auth routes
 app.use('/api/auth', authRouter);
+
+//User routes
+app.use('/api/user', userRouter);
 
 //Listen to port
 app.listen(PORT, () => {

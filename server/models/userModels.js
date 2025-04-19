@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
     },
 })
 
-//User model
+//User model to create a collection in the database
 const userModel = mongoose.models.user || mongoose.model('user', userSchema);
 
 export default userModel;
