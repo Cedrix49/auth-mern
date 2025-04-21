@@ -19,7 +19,7 @@ app.use(express.json());
 //Parse cookies
 app.use(cookieParser());
 
-const allowedOrigins = ['http://localhost:5173']
+const allowedOrigins = ['https://completauth.vercel.app', 'http://localhost:5173']
 //CORS
 app.use(cors({
     origin: allowedOrigins, credentials: true,
