@@ -1,18 +1,76 @@
-import React from 'react'
-import { useState } from 'react'
+import React, {useContext, useState} from 'react'
 import { assets } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
-
+import { AppContent } from '../context/AppContext'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+ 
 const Login = () => {
+    //useNavigate
     const navigate = useNavigate()
+
+    //useContext
+    const {backendUrl, setIsLoggedIn, getUserData} = useContext(AppContent)
+
+    //useState for sign up or login
     const [state, setState] = useState('Sign Up')
+    //useState for name
     const [name, setName] = useState('')
+    //useState for email
     const [email, setEmail] = useState('')
+    //useState for password
     const [password, setPassword] = useState('')
 
+    //onSubmitHandler
+    const onSubmitHandler = async (e) => {
+        
+        try {
+            //prevent default
+            e.preventDefault()
+
+            //set with credentials
+            axios.defaults.withCredentials = true
+
+            //if state is sign up
+            if(state === 'Sign Up') {
+               //send data to backend
+               const {data} = await axios.post(backendUrl + '/api/auth/register', {name, email, password})
+
+               //if success
+               if(data.success) {
+                //set is logged in
+                setIsLoggedIn(true)
+                //set user data
+                getUserData()
+                //navigate to home
+                navigate('/')
+               }else{
+                //toast error
+                toast.error(data.message)
+               }
+            }else{
+                //if state is login send data to backend    
+               const {data} = await axios.post(backendUrl + '/api/auth/login', {email, password})
+
+               //if success
+               if(data.success) {
+                //set is logged in
+                setIsLoggedIn(true)
+                //set user data
+                getUserData()
+                //navigate to home
+                navigate('/')
+               }else{
+                //toast error
+                toast.error(data.message)
+               }
+            }
+        //catch error
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
   return (
-    
-    
     <div className="flex items-center justify-center min-h-screen px-6 
                     sm:px-0 bg-gradient-to-br from-blue-200 to-purple-400">
         <img src={assets.logo} 
@@ -27,7 +85,7 @@ const Login = () => {
             <p className="text-center text-sm mb-6">{state === 'Sign Up' ? 'Create your account!' : 'Login to your account!'}</p>
 
             {/* Form */}
-            <form>
+            <form onSubmit={onSubmitHandler}>
 
                 {state === 'Sign Up' && (
                 <div className="mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full
@@ -40,6 +98,8 @@ const Login = () => {
                         value={name}
                         className='bg-transparent outline-none' 
                         type="text" 
+                        id='name'
+                        name='name'
                         placeholder='Full Name' 
                         required />
                 </div>
@@ -55,6 +115,8 @@ const Login = () => {
                         value={email}
                         className='bg-transparent outline-none' 
                         type="email" 
+                        id='email'
+                        name='email'
                         placeholder='Email' 
                         required />
                 </div>
@@ -68,8 +130,11 @@ const Login = () => {
                         value={password}
                         className='bg-transparent outline-none' 
                         type="password" 
+                        id='password'
+                        name='password'
                         placeholder='Password' 
-                        required />
+                        required 
+                    />
                 </div>
 
                 <p 
