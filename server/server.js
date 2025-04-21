@@ -6,6 +6,7 @@ import connectDB from "./config/mongodb.js";
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -18,9 +19,10 @@ app.use(express.json());
 //Parse cookies
 app.use(cookieParser());
 
+const allowedOrigins = ['http://localhost:5173']
 //CORS
 app.use(cors({
-    credentials: true,
+    origin: allowedOrigins, credentials: true,
 }))
 
 //Test api

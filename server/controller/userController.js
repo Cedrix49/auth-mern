@@ -5,8 +5,8 @@ export const getUserData = async (req, res) => {
 
     //Try to get user data
     try {
-        //Get user id from request
-        const userId = req.userId;
+        //Get user id from request body
+        const userId = req.user.id;
 
         //Get user data from database
         const user = await userModel.findById(userId);
